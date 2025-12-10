@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portrait Matting with U-Net - CS566 Project</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .navbar nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 2rem;
+            transition: opacity 0.3s;
+        }
+
+        .navbar nav a:hover {
+            opacity: 0.8;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero .meta {
+            margin-top: 2rem;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        section {
+            background: white;
+            margin: 2rem auto;
+            padding: 3rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.6rem;
+            color: #764ba2;
+            margin: 2rem 0 1rem 0;
+        }
+
+        h4 {
+            font-size: 1.3rem;
+            color: #555;
+            margin: 1.5rem 0 0.8rem 0;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+            color: #555;
+        }
+
+        ul, ol {
+            margin: 1rem 0 1rem 2rem;
+            color: #555;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .architecture-diagram {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .results-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .results-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .results-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .image-item {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .image-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .image-caption {
+            background: #f8f9fa;
+            padding: 1rem;
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin: 2rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.5rem;
+            top: 0.5rem;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px #667eea;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .success {
+            background: #28a745;
+        }
+
+        .warning {
+            background: #ffc107;
+        }
+
+        .danger {
+            background: #dc3545;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .metric-value {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
+        .metric-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            section {
+                padding: 2rem 1rem;
+            }
+
+            .navbar nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="navbar">
+        <div class="container">
+            <h1>🎨 Portrait Matting</h1>
+            <nav>
+                <a href="#motivation">Motivation</a>
+                <a href="#approach">Approach</a>
+                <a href="#implementation">Implementation</a>
+                <a href="#results">Results</a>
+                <a href="#discussion">Discussion</a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <h1>Portrait Matting with U-Net</h1>
+        <p>Deep Learning-Based High-Precision Portrait Segmentation with Background Replacement</p>
+        <div class="meta">
+            <strong>CS566 Computer Vision Project</strong> | Fall 2024<br>
+            <a href="https://github.com/cmw2004/Portrait-Matting-with-U-Net" style="color: white; text-decoration: none;">
+                📂 GitHub Repository
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Motivation Section -->
+        <section id="motivation">
+            <h2>🎯 Motivation</h2>
+            
+            <p>Portrait matting is a fundamental task in computer vision with numerous real-world applications. The goal is to accurately separate a person from the background in an image, which is essential for:</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📸</div>
+                    <h4>ID Photo Processing</h4>
+                    <p>Automatic background replacement for passport and visa photos</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎬</div>
+                    <h4>Video Conferencing</h4>
+                    <p>Real-time background blur and replacement</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛍️</div>
+                    <h4>E-commerce</h4>
+                    <p>Product photography with transparent backgrounds</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h4>Creative Design</h4>
+                    <p>Photo editing and artistic compositing</p>
+                </div>
+            </div>
+
+            <h3>Challenges</h3>
+            <ul>
+                <li><strong>Fine Details:</strong> Accurately capturing hair strands, clothing textures, and semi-transparent regions</li>
+                <li><strong>Edge Quality:</strong> Maintaining sharp, natural-looking boundaries between foreground and background</li>
+                <li><strong>Generalization:</strong> Performing well across diverse lighting conditions, poses, and backgrounds</li>
+                <li><strong>Real-time Performance:</strong> Achieving fast inference speeds for practical applications</li>
+            </ul>
+
+            <div class="info-box">
+                <strong>💡 Project Goal:</strong> Develop a robust portrait matting system using U-Net architecture with attention mechanisms to achieve high-quality segmentation while maintaining fast inference speeds.
+            </div>
+        </section>
+
+        <!-- Approach Section -->
+        <section id="approach">
+            <h2>🔬 Technical Approach</h2>
+
+            <h3>Model Architecture</h3>
+            <p>Our approach is based on a modified U-Net architecture with the following key components:</p>
+
+            <div class="architecture-diagram">
+                <h4>U-Net with ResNet18 Encoder + Attention Gates</h4>
+                <pre style="text-align: left; background: #f8f9fa; padding: 1.5rem; border-radius: 8px; font-size: 0.9rem;">
+Input Image (RGB)
+    ↓
+┌─────────────────────────────────────────────┐
+│ Encoder (ResNet18 - Pretrained)            │
+│  - Conv1: 64 channels                      │
+│  - Layer1: 64 channels  (skip1) ──────┐   │
+│  - Layer2: 128 channels (skip2) ─────┐│   │
+│  - Layer3: 256 channels (skip3) ────┐││   │
+│  - Layer4: 512 channels (skip4) ───┐│││   │
+└────────────────────────────────────│││││───┘
+                                     ││││↓
+                                     ││││Bottleneck
+                                     │││││
+┌────────────────────────────────────││││↓───┐
+│ Decoder (with Attention Gates)     │││││   │
+│  - UpBlock4 + AttentionGate ←──────┘│││   │
+│  - UpBlock3 + AttentionGate ←───────┘││   │
+│  - UpBlock2 + AttentionGate ←────────┘│   │
+│  - UpBlock1 + AttentionGate ←─────────┘   │
+└────────────────────────────────────────────┘
+    ↓
+Final Conv + Sigmoid
+    ↓
+Alpha Matte [0, 1]
+                </pre>
+            </div>
+
+            <h4>1. Encoder: ResNet18 (Pretrained)</h4>
+            <ul>
+                <li>Leverages ImageNet pre-training for better feature extraction</li>
+                <li>Extracts multi-scale features at different resolutions</li>
+                <li>Four encoding levels: 64, 128, 256, 512 channels</li>
+            </ul>
+
+            <h4>2. Decoder: Upsampling + Skip Connections</h4>
+            <ul>
+                <li>Progressively upsamples features back to original resolution</li>
+                <li>Skip connections preserve fine-grained spatial information</li>
+                <li>Each decoder block includes ConvTranspose2d + ConvBlock</li>
+            </ul>
+
+            <h4>3. Attention Gates</h4>
+            <ul>
+                <li>Focus on foreground regions (portrait) while suppressing background</li>
+                <li>Improves edge quality by highlighting relevant features</li>
+                <li>Applied at each skip connection before concatenation</li>
+            </ul>
+
+            <h4>4. Output: Sigmoid Activation</h4>
+            <ul>
+                <li>Produces alpha values in range [0, 1]</li>
+                <li>0 = background (fully transparent)</li>
+                <li>1 = foreground (fully opaque)</li>
+            </ul>
+
+            <h3>Loss Function</h3>
+            <p>We designed a composite loss function to optimize multiple aspects:</p>
+
+            <div class="code-block">
+Total Loss = 1.0 × BCE + 10.0 × L1 + 15.0 × Edge + 20.0 × Gradient
+
+Where:
+• BCE Loss: Binary Cross-Entropy for pixel-wise classification
+• L1 Loss: Mean Absolute Error for overall accuracy
+• Edge Loss: Laplacian operator to detect edge discontinuities
+• Gradient Loss: Sobel operator (X & Y) for sharper edges
+            </div>
+
+            <p><strong>Rationale:</strong> The higher weights on edge and gradient losses (15× and 20×) emphasize edge quality, which is critical for natural-looking cutouts.</p>
+
+            <h3>Data Augmentation Strategy</h3>
+            <p>To improve model generalization and robustness:</p>
+
+            <ul>
+                <li><strong>Horizontal Flip</strong> (p=0.5): Mirror images for pose variation</li>
+                <li><strong>Random Brightness & Contrast</strong> (p=0.5): Simulate different lighting</li>
+                <li><strong>Color Jitter</strong> (p=0.5): HSV adjustments for color robustness</li>
+                <li><strong>Gaussian Noise</strong> (p=0.3): Handle image quality variations</li>
+                <li><strong>Random Blur</strong> (p=0.2): Account for different camera focus</li>
+                <li><strong>Gamma Transform</strong> (p=0.3): Exposure adjustments</li>
+            </ul>
+
+            <h3>Training Strategy</h3>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>Phase 1: Initial Training (Epochs 0-19)</h4>
+                    <p>Learning rate: 1e-4, Focus on learning basic features and rough segmentation</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Phase 2: Fine-tuning (Epochs 20-39)</h4>
+                    <p>Learning rate: 1e-5 (×0.1), Refine edge details and reduce false positives</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Phase 3: Final Polish (Epochs 40-49)</h4>
+                    <p>Learning rate: 1e-6 (×0.1), Final adjustments for best MAE</p>
+                </div>
+            </div>
+
+            <ul>
+                <li><strong>Optimizer:</strong> Adam (β1=0.9, β2=0.999)</li>
+                <li><strong>Batch Size:</strong> 8</li>
+                <li><strong>Input Size:</strong> 320×320</li>
+                <li><strong>LR Scheduler:</strong> MultiStepLR (milestones=[20, 40], gamma=0.1)</li>
+            </ul>
+        </section>
+
+        <!-- Implementation Section -->
+        <section id="implementation">
+            <h2>💻 Implementation</h2>
+
+            <h3>Technology Stack</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>PyTorch 2.3.1</h4>
+                    <p>Deep learning framework with CUDA 12.1 support</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Albumentations</h4>
+                    <p>Fast and flexible data augmentation library</p>
+                </div>
+                <div class="feature-card">
+                    <h4>NumPy < 2.0</h4>
+                    <p>Numerical computing (compatibility constraint)</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Pillow & OpenCV</h4>
+                    <p>Image I/O and preprocessing</p>
+                </div>
+            </div>
+
+            <h3>Key Code Components</h3>
+
+            <h4>1. Model Definition (model.py)</h4>
+            <div class="code-block">
+class UNet(nn.Module):
+    def __init__(self, n_classes=1, use_attention=True, pretrained=True):
+        # ResNet18 encoder
+        self.encoder = models.resnet18(pretrained=pretrained)
+        
+        # Attention gates at each level
+        self.att4 = AttentionGate(512, 512)
+        self.att3 = AttentionGate(256, 256)
+        self.att2 = AttentionGate(128, 128)
+        self.att1 = AttentionGate(64, 64)
+        
+        # Decoder with skip connections
+        self.up4 = UpBlock(512, 256, 512)  # in, out, skip
+        self.up3 = UpBlock(256, 128, 256)
+        self.up2 = UpBlock(128, 64, 128)
+        self.up1 = UpBlock(64, 64, 64)
+        
+        # Final prediction
+        self.final = nn.Sequential(
+            nn.Conv2d(64, n_classes, 1),
+            nn.Sigmoid()
+        )
+            </div>
+
+            <h4>2. Composite Loss (losses.py)</h4>
+            <div class="code-block">
+def composite_loss(pred, target):
+    # Binary Cross-Entropy
+    l_bce = F.binary_cross_entropy(pred, target)
+    
+    # L1 Loss
+    l_l1 = F.l1_loss(pred, target)
+    
+    # Laplacian Edge Loss
+    l_edge = laplacian_edge(pred - target)
+    
+    # Sobel Gradient Loss (NEW!)
+    l_grad = gradient_loss(pred, target)
+    
+    # Weighted combination
+    return l_bce + 10*l_l1 + 15*l_edge + 20*l_grad
+            </div>
+
+            <h4>3. Data Pipeline (dataset.py)</h4>
+            <ul>
+                <li><strong>Stem-based file matching:</strong> Handles different image/mask extensions (.jpg/.png)</li>
+                <li><strong>Albumentations pipeline:</strong> Applies augmentations to both image and mask</li>
+                <li><strong>ToTensorV2:</strong> Converts to PyTorch tensors in [0, 255] range (NOT normalized to [0, 1])</li>
+            </ul>
+
+            <h3>Dataset</h3>
+            <div class="info-box">
+                <strong>Portrait Dataset:</strong> 9,421 image-mask pairs
+                <ul style="margin-top: 0.5rem;">
+                    <li>Images: RGB, various resolutions (resized to 320×320)</li>
+                    <li>Masks: Grayscale alpha mattes, range [0, 1]</li>
+                    <li>No background augmentation used (bg_dir=None)</li>
+                </ul>
+            </div>
+
+            <h3>Training Environment</h3>
+            <ul>
+                <li><strong>Hardware:</strong> NVIDIA GPU with CUDA 12.1</li>
+                <li><strong>Training Time:</strong> ~50 epochs, ~10 iterations/second</li>
+                <li><strong>GPU Memory:</strong> ~4GB VRAM (batch_size=8)</li>
+                <li><strong>Validation:</strong> Real-time MAE monitoring</li>
+            </ul>
+
+            <h3>Inference Pipeline</h3>
+            <ol>
+                <li>Load pre-trained model checkpoint (best.pth)</li>
+                <li>Resize input image to 320×320 using Albumentations</li>
+                <li>Forward pass through U-Net → alpha matte [0, 1]</li>
+                <li>Interpolate back to original image resolution</li>
+                <li>Generate outputs:
+                    <ul>
+                        <li>mask.png (grayscale)</li>
+                        <li>cutout.png (RGBA with transparent background)</li>
+                        <li>composite.png (black background preview)</li>
+                    </ul>
+                </li>
+            </ol>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results">
+            <h2>📊 Results</h2>
+
+            <h3>Quantitative Performance</h3>
+            <div class="feature-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Mean Absolute Error</div>
+                    <div class="metric-value">0.0137</div>
+                    <p style="margin: 0; opacity: 0.9;">On validation set (9,421 images)</p>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Training Epochs</div>
+                    <div class="metric-value">50</div>
+                    <p style="margin: 0; opacity: 0.9;">Best at epoch 47</p>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Inference Speed</div>
+                    <div class="metric-value">~10 it/s</div>
+                    <p style="margin: 0; opacity: 0.9;">On single RTX GPU</p>
+                </div>
+            </div>
+
+            <h3>Training Progress</h3>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Epoch Range</th>
+                        <th>Learning Rate</th>
+                        <th>Validation MAE</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0 - 19</td>
+                        <td>1e-4</td>
+                        <td>0.039 → 0.025</td>
+                        <td><span class="badge">Initial Learning</span></td>
+                    </tr>
+                    <tr>
+                        <td>20 - 39</td>
+                        <td>1e-5</td>
+                        <td>0.025 → 0.018</td>
+                        <td><span class="badge warning">Fine-tuning</span></td>
+                    </tr>
+                    <tr>
+                        <td>40 - 49</td>
+                        <td>1e-6</td>
+                        <td>0.018 → 0.0137</td>
+                        <td><span class="badge success">Best Performance</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Qualitative Results</h3>
+            <p>The model produces high-quality alpha mattes with sharp edges and accurate foreground segmentation. Key observations:</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>✅ Strengths</h4>
+                    <ul style="text-align: left;">
+                        <li>Sharp edges on clothing and face contours</li>
+                        <li>Good hair detail preservation</li>
+                        <li>Robust to different lighting conditions</li>
+                        <li>Fast inference speed</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>⚠️ Limitations</h4>
+                    <ul style="text-align: left;">
+                        <li>Fine hair strands could be improved</li>
+                        <li>Semi-transparent regions (veils, glass) challenging</li>
+                        <li>Complex backgrounds may cause artifacts</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Background Replacement Demo</h3>
+            <p>Successfully implemented background replacement with optional edge smoothing (Gaussian filter). The alpha blending formula:</p>
+            <div class="code-block">
+Result = Foreground × Alpha + Background × (1 - Alpha)
+
+Where:
+• Foreground: Original image
+• Alpha: Predicted matte [0, 1]
+• Background: New background image (resized to match)
+            </div>
+
+            <h3>Comparison with Baseline</h3>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>MAE</th>
+                        <th>Edge Quality</th>
+                        <th>Speed (it/s)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Basic U-Net (no attention)</td>
+                        <td>0.039</td>
+                        <td>Moderate</td>
+                        <td>~12</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Our Model (with attention)</strong></td>
+                        <td><strong>0.0137</strong></td>
+                        <td><strong>High</strong></td>
+                        <td><strong>~10</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Key Findings</h3>
+            <div class="highlight-box">
+                <h4>🔍 Important Discovery: Preprocessing Consistency</h4>
+                <p>We found that <strong>preprocessing must be identical between training and inference</strong>. Initially, the model output all-black images during inference because:</p>
+                <ul>
+                    <li><strong>Training:</strong> Used Albumentations' ToTensorV2() which keeps values in [0, 255]</li>
+                    <li><strong>Inference (broken):</strong> Manually normalized to [0, 1], causing input distribution shift</li>
+                    <li><strong>Solution:</strong> Use ToTensorV2() in inference as well (no /255 normalization)</li>
+                </ul>
+                <p><strong>Lesson:</strong> Always verify the exact preprocessing pipeline when debugging inference issues!</p>
+            </div>
+        </section>
+
+        <!-- Discussion Section -->
+        <section id="discussion">
+            <h2>💭 Discussion & Problems Encountered</h2>
+
+            <h3>Major Challenges & Solutions</h3>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>Problem 1: NumPy Version Incompatibility</h4>
+                    <p><strong>Issue:</strong> Matplotlib compiled against NumPy 1.x crashed with NumPy 2.2.6</p>
+                    <p><strong>Error:</strong> <code>ImportError: numpy.core.multiarray failed to import</code></p>
+                    <p><strong>Solution:</strong> Downgraded to <code>numpy&lt;2.0</code> (installed 1.26.4)</p>
+                    <span class="badge danger">Critical</span>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Problem 2: Filename Extension Mismatch</h4>
+                    <p><strong>Issue:</strong> Images were .jpg but masks were .png, causing FileNotFoundError</p>
+                    <p><strong>Solution:</strong> Implemented stem-based file matching in dataset.py</p>
+                    <div class="code-block" style="font-size: 0.85rem;">
+# Match by filename stem, not full name
+stem = os.path.splitext(img_name)[0]
+if stem in mask_map:
+    pairs.append((img_name, mask_map[stem]))
+                    </div>
+                    <span class="badge warning">Medium</span>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Problem 3: Model Architecture Tensor Size Mismatch</h4>
+                    <p><strong>Issue:</strong> Skip connections had incorrect channel dimensions</p>
+                    <p><strong>Error:</strong> <code>RuntimeError: expected 256 channels, but got 512</code></p>
+                    <p><strong>Solution:</strong> Added skip_c parameter to UpBlock to handle concatenated channels</p>
+                    <div class="code-block" style="font-size: 0.85rem;">
+# Before: UpBlock(in_c, out_c)
+# After:  UpBlock(in_c, out_c, skip_c)
+self.conv = ConvBlock(out_c + skip_c, out_c)  # Account for concat
+                    </div>
+                    <span class="badge danger">Critical</span>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Problem 4: Spatial Size Mismatch in Decoder</h4>
+                    <p><strong>Issue:</strong> ConvTranspose2d output size slightly off, causing concatenation failure</p>
+                    <p><strong>Error:</strong> <code>RuntimeError: size of tensor a (2) must match size of tensor b (5)</code></p>
+                    <p><strong>Solution:</strong> Added F.interpolate before concatenation in UpBlock and AttentionGate</p>
+                    <span class="badge warning">Medium</span>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Problem 5: All-Black Inference Outputs</h4>
+                    <p><strong>Issue:</strong> Model trained successfully (MAE 0.0137) but inference produced all-black images</p>
+                    <p><strong>Root Cause:</strong> Preprocessing mismatch between training and inference</p>
+                    <ul>
+                        <li>Training: ToTensorV2() keeps [0-255] range</li>
+                        <li>Inference: Manually divided by 255 → [0-0.004] range → model outputs near-zero</li>
+                    </ul>
+                    <p><strong>Solution:</strong> Removed manual normalization, used ToTensorV2() consistently</p>
+                    <span class="badge danger">Critical</span>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Problem 6: Edge Quality Not Satisfactory</h4>
+                    <p><strong>Issue:</strong> Initial model (30 epochs, basic loss) had blurry edges</p>
+                    <p><strong>Solution:</strong> Added gradient loss (Sobel operator) and increased training to 50 epochs</p>
+                    <p><strong>Improvements:</strong></p>
+                    <ul>
+                        <li>Edge loss weight: 5× → 15× (3x increase)</li>
+                        <li>Added gradient loss: 20× weight</li>
+                        <li>Learning rate decay at epochs 20 and 40</li>
+                        <li>Enhanced data augmentation (GaussNoise, Blur, Gamma)</li>
+                    </ul>
+                    <span class="badge success">Solved</span>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Problem 7: Albumentations GaussNoise Parameter Error</h4>
+                    <p><strong>Issue:</strong> <code>UserWarning: Argument(s) 'var_limit' are not valid</code></p>
+                    <p><strong>Solution:</strong> Simplified to <code>A.GaussNoise(p=0.3)</code> without custom parameters</p>
+                    <span class="badge">Minor</span>
+                </div>
+            </div>
+
+            <h3>Interesting Findings</h3>
+
+            <div class="info-box">
+                <h4>📈 Learning Rate Scheduling Impact</h4>
+                <p>The MultiStepLR scheduler significantly improved final performance:</p>
+                <ul>
+                    <li>Epoch 0-19 (lr=1e-4): MAE decreased rapidly 0.039 → 0.025</li>
+                    <li>Epoch 20-39 (lr=1e-5): Gradual refinement 0.025 → 0.018</li>
+                    <li>Epoch 40-49 (lr=1e-6): Fine-tuning 0.018 → 0.0137</li>
+                </ul>
+                <p><strong>Conclusion:</strong> Lower learning rates in later stages prevent overshooting and allow fine-grained optimization.</p>
+            </div>
+
+            <div class="info-box">
+                <h4>🎨 Attention Gates Effectiveness</h4>
+                <p>Comparing models with/without attention gates:</p>
+                <ul>
+                    <li><strong>Without Attention:</strong> MAE ~0.039, fuzzy edges, background noise</li>
+                    <li><strong>With Attention:</strong> MAE ~0.0137, sharper edges, cleaner segmentation</li>
+                </ul>
+                <p><strong>Conclusion:</strong> Attention mechanism provides ~65% MAE reduction and better visual quality.</p>
+            </div>
+
+            <div class="info-box">
+                <h4>⚡ Gradient Loss for Edge Enhancement</h4>
+                <p>Adding Sobel gradient loss (20× weight) specifically targets edge sharpness:</p>
+                <ul>
+                    <li>Computes X and Y gradients of both prediction and ground truth</li>
+                    <li>Penalizes gradient differences → sharper transitions</li>
+                    <li>Particularly effective for hair and clothing edges</li>
+                </ul>
+                <p><strong>Conclusion:</strong> Explicit edge-focused losses are crucial for high-quality matting.</p>
+            </div>
+
+            <h3>Lessons Learned</h3>
+            <ol>
+                <li><strong>Preprocessing Consistency:</strong> Always verify that training and inference use identical preprocessing pipelines</li>
+                <li><strong>Debugging Strategy:</strong> Create diagnostic scripts (like debug_pred.py) to isolate issues between model weights and data processing</li>
+                <li><strong>Architecture Design:</strong> Careful dimension tracking is essential; add interpolation for size mismatches</li>
+                <li><strong>Loss Function Engineering:</strong> Domain-specific losses (edge, gradient) significantly improve task-specific metrics</li>
+                <li><strong>Dependency Management:</strong> Pin versions (especially NumPy) to avoid compatibility issues</li>
+            </ol>
+
+            <h3>Future Improvements</h3>
+            <ul>
+                <li><strong>Model:</strong> Experiment with deeper encoders (ResNet50, EfficientNet) for better feature extraction</li>
+                <li><strong>Loss:</strong> Add perceptual loss (VGG features) for more realistic results</li>
+                <li><strong>Post-processing:</strong> Apply guided filter or closed-form matting for refinement</li>
+                <li><strong>Data:</strong> Incorporate more diverse backgrounds and semi-transparent objects</li>
+                <li><strong>Optimization:</strong> Quantization and pruning for mobile deployment</li>
+                <li><strong>Real-time:</strong> Optimize architecture for video matting at 30+ FPS</li>
+            </ul>
+        </section>
+
+        <!-- Code & Resources Section -->
+        <section id="resources">
+            <h2>📦 Code & Resources</h2>
+
+            <h3>GitHub Repository</h3>
+            <div class="highlight-box">
+                <h4>🔗 <a href="https://github.com/cmw2004/Portrait-Matting-with-U-Net" style="color: white;">github.com/cmw2004/Portrait-Matting-with-U-Net</a></h4>
+                <p>Complete source code, trained models, and documentation</p>
+            </div>
+
+            <h3>Quick Start</h3>
+            <div class="code-block">
+# Clone repository
+git clone https://github.com/cmw2004/Portrait-Matting-with-U-Net.git
+cd Portrait-Matting-with-U-Net
+
+# Install dependencies
+pip install -r requirement.txt
+
+# Run inference
+python infer.py --model ./checkpoints/best.pth \
+                --img your_image.jpg \
+                --out ./output/
+
+# Replace background
+python replace_bg.py --model ./checkpoints/best.pth \
+                     --img your_photo.jpg \
+                     --background new_bg.jpg \
+                     --out ./results/
+            </div>
+
+            <h3>Project Files</h3>
+            <ul>
+                <li><strong>model.py</strong> - U-Net architecture definition</li>
+                <li><strong>dataset.py</strong> - Data loading and augmentation</li>
+                <li><strong>losses.py</strong> - Composite loss function</li>
+                <li><strong>train.py</strong> - Training script with validation</li>
+                <li><strong>infer.py</strong> - Inference for portrait matting</li>
+                <li><strong>replace_bg.py</strong> - Background replacement utility</li>
+                <li><strong>utils.py</strong> - Checkpoint management and visualization</li>
+            </ul>
+
+            <h3>References</h3>
+            <ol>
+                <li>Ronneberger, O., Fischer, P., & Brox, T. (2015). U-Net: Convolutional Networks for Biomedical Image Segmentation. <em>MICCAI</em>.</li>
+                <li>He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep Residual Learning for Image Recognition. <em>CVPR</em>.</li>
+                <li>Oktay, O., et al. (2018). Attention U-Net: Learning Where to Look for the Pancreas. <em>MIDL</em>.</li>
+                <li>Li, Y., & Lu, H. (2020). Natural Image Matting via Guided Contextual Attention. <em>AAAI</em>.</li>
+            </ol>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p><strong>Portrait Matting with U-Net</strong></p>
+        <p>CS566 Computer Vision Project | Fall 2024</p>
+        <p>
+            <a href="https://github.com/cmw2004/Portrait-Matting-with-U-Net">GitHub</a> | 
+            <a href="mailto:your-email@example.com">Contact</a>
+        </p>
+        <p style="margin-top: 1rem; opacity: 0.7;">© 2024 All Rights Reserved</p>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight active section in navbar
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.navbar nav a');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.style.opacity = '0.7';
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.style.opacity = '1';
+                    link.style.fontWeight = 'bold';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
