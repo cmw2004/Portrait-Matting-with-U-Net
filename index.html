@@ -22,8 +22,10 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 1rem 0;
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 1000;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
@@ -33,7 +35,7 @@
             margin: 0 auto;
             padding: 0 2rem;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
         }
 
@@ -42,15 +44,39 @@
             font-weight: 600;
         }
 
-        .navbar nav a {
-            color: white;
-            text-decoration: none;
-            margin-left: 2rem;
-            transition: opacity 0.3s;
+        .sidebar-nav {
+            position: fixed;
+            left: 0;
+            top: 80px;
+            width: 250px;
+            height: calc(100vh - 80px);
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 2rem 1rem;
+            overflow-y: auto;
+            z-index: 999;
         }
 
-        .navbar nav a:hover {
-            opacity: 0.8;
+        .sidebar-nav a {
+            display: block;
+            color: #667eea;
+            text-decoration: none;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .sidebar-nav a:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar-nav a.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
 
         .hero {
@@ -58,6 +84,8 @@
             color: white;
             padding: 4rem 2rem;
             text-align: center;
+            margin-top: 60px;
+            margin-left: 250px;
         }
 
         .hero h1 {
@@ -83,6 +111,7 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 2rem;
+            margin-left: 250px;
         }
 
         section {
@@ -339,8 +368,16 @@
                 padding: 2rem 1rem;
             }
 
-            .navbar nav {
+            .sidebar-nav {
                 display: none;
+            }
+
+            .hero {
+                margin-left: 0;
+            }
+
+            .container {
+                margin-left: 0;
             }
         }
     </style>
@@ -350,15 +387,18 @@
     <div class="navbar">
         <div class="container">
             <h1>🎨 Portrait Matting</h1>
-            <nav>
-                <a href="#motivation">Motivation</a>
-                <a href="#approach">Approach</a>
-                <a href="#implementation">Implementation</a>
-                <a href="#results">Results</a>
-                <a href="#discussion">Discussion</a>
-            </nav>
         </div>
     </div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar-nav">
+        <a href="#motivation">🎯 Motivation</a>
+        <a href="#approach">🔬 Approach</a>
+        <a href="#implementation">💻 Implementation</a>
+        <a href="#results">📊 Results</a>
+        <a href="#discussion">💭 Discussion</a>
+        <a href="#resources">📦 Resources</a>
+    </nav>
 
     <!-- Hero Section -->
     <div class="hero">
@@ -986,25 +1026,24 @@ python replace_bg.py --model ./checkpoints/best.pth \
             });
         });
 
-        // Highlight active section in navbar
+        // Highlight active section in sidebar
         window.addEventListener('scroll', () => {
             const sections = document.querySelectorAll('section');
-            const navLinks = document.querySelectorAll('.navbar nav a');
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
             
             let current = '';
             sections.forEach(section => {
                 const sectionTop = section.offsetTop;
                 const sectionHeight = section.clientHeight;
-                if (pageYOffset >= sectionTop - 100) {
+                if (pageYOffset >= sectionTop - 150) {
                     current = section.getAttribute('id');
                 }
             });
 
             navLinks.forEach(link => {
-                link.style.opacity = '0.7';
+                link.classList.remove('active');
                 if (link.getAttribute('href') === `#${current}`) {
-                    link.style.opacity = '1';
-                    link.style.fontWeight = 'bold';
+                    link.classList.add('active');
                 }
             });
         });
