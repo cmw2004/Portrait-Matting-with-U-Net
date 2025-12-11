@@ -739,8 +739,56 @@ def composite_loss(pred, target):
             </table>
 
             <h3>Qualitative Results</h3>
-            <p>The model produces high-quality alpha mattes with sharp edges and accurate foreground segmentation. Key observations:</p>
+            <p>The model produces high-quality alpha mattes with sharp edges and accurate foreground segmentation. Below are example inference results from the validation set:</p>
 
+            <div class="image-gallery" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
+                <div class="image-item">
+                    <img src="./examples/comparison_p_930f61e7.png" alt="Example 1" style="width: 100%; border-radius: 8px;">
+                    <div class="image-caption">Example 1: p_930f61e7</div>
+                </div>
+                <div class="image-item">
+                    <img src="./examples/comparison_p_d2cbcaaf.png" alt="Example 2" style="width: 100%; border-radius: 8px;">
+                    <div class="image-caption">Example 2: p_d2cbcaaf</div>
+                </div>
+                <div class="image-item">
+                    <img src="./examples/comparison_p_87564383.png" alt="Example 3" style="width: 100%; border-radius: 8px;">
+                    <div class="image-caption">Example 3: p_87564383</div>
+                </div>
+                <div class="image-item">
+                    <img src="./examples/comparison_p_b7a2fc3c.png" alt="Example 4" style="width: 100%; border-radius: 8px;">
+                    <div class="image-caption">Example 4: p_b7a2fc3c</div>
+                </div>
+                <div class="image-item">
+                    <img src="./examples/comparison_p_c770e8ba.png" alt="Example 5" style="width: 100%; border-radius: 8px;">
+                    <div class="image-caption">Example 5: p_c770e8ba</div>
+                </div>
+                <div class="image-item">
+                    <img src="./examples/comparison_p_fb23fc85.png" alt="Example 6" style="width: 100%; border-radius: 8px;">
+                    <div class="image-caption">Example 6: p_fb23fc85</div>
+                </div>
+                <div class="image-item">
+                    <img src="./examples/comparison_p_48f2de97.png" alt="Example 7" style="width: 100%; border-radius: 8px;">
+                    <div class="image-caption">Example 7: p_48f2de97</div>
+                </div>
+                <div class="image-item">
+                    <img src="./examples/comparison_p_e7028c5f.png" alt="Example 8" style="width: 100%; border-radius: 8px;">
+                    <div class="image-caption">Example 8: p_e7028c5f</div>
+                </div>
+                <div class="image-item">
+                    <img src="./examples/comparison_p_cca19cb7.png" alt="Example 9" style="width: 100%; border-radius: 8px;">
+                    <div class="image-caption">Example 9: p_cca19cb7</div>
+                </div>
+                <div class="image-item">
+                    <img src="./examples/comparison_p_127746a6.png" alt="Example 10" style="width: 100%; border-radius: 8px;">
+                    <div class="image-caption">Example 10: p_127746a6</div>
+                </div>
+            </div>
+
+            <p style="text-align: center; color: #666; font-size: 0.9rem; margin-top: 1rem;">
+                <em>Each example shows: Original Image | Predicted Mask | Cutout (RGBA) | Composite</em>
+            </p>
+
+            <h3>Key Observations</h3>
             <div class="feature-grid">
                 <div class="feature-card">
                     <h4>✅ Strengths</h4>

@@ -1,0 +1,78 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyTorch
+*.pth
+*.pt
+checkpoints/
+checkpoints_old/
+checkpoints_test/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Data
+data/
+dataset/
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+!examples/*.jpg
+!examples/*.png
+
+# Output
+output/
+demo_output*/
+replaced_output*/
+*_output/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.bak
+*.cache
+
+# Debug
+debug_*.py
+debug_*.png
+check_*.py
+
+# My photos (私人照片)
+my_photo/
+my_replace/
