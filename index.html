@@ -464,32 +464,7 @@
 
             <div class="architecture-diagram">
                 <h4>U-Net with ResNet18 Encoder + Attention Gates</h4>
-                <pre style="text-align: left; background: #f8f9fa; padding: 1.5rem; border-radius: 8px; font-size: 0.9rem;">
-Input Image (RGB)
-    ↓
-┌─────────────────────────────────────────────┐
-│ Encoder (ResNet18 - Pretrained)            │
-│  - Conv1: 64 channels                      │
-│  - Layer1: 64 channels  (skip1) ──────┐   │
-│  - Layer2: 128 channels (skip2) ─────┐│   │
-│  - Layer3: 256 channels (skip3) ────┐││   │
-│  - Layer4: 512 channels (skip4) ───┐│││   │
-└────────────────────────────────────│││││───┘
-                                     ││││↓
-                                     ││││Bottleneck
-                                     │││││
-┌────────────────────────────────────││││↓───┐
-│ Decoder (with Attention Gates)     │││││   │
-│  - UpBlock4 + AttentionGate ←──────┘│││   │
-│  - UpBlock3 + AttentionGate ←───────┘││   │
-│  - UpBlock2 + AttentionGate ←────────┘│   │
-│  - UpBlock1 + AttentionGate ←─────────┘   │
-└────────────────────────────────────────────┘
-    ↓
-Final Conv + Sigmoid
-    ↓
-Alpha Matte [0, 1]
-                </pre>
+                <img src="./model.png" alt="U-Net Architecture Diagram" style="max-width: 100%; height: auto; border-radius: 8px; margin: 1rem 0;">
             </div>
 
             <h4>1. Encoder: ResNet18 (Pretrained)</h4>
@@ -846,6 +821,19 @@ Where:
                 </tbody>
             </table>
 
+            <h3>Video Demonstration</h3>
+            <p>Watch our project presentation showcasing the portrait matting system in action:</p>
+            
+            <div style="max-width: 900px; margin: 2rem auto; text-align: center;">
+                <video controls style="width: 100%; max-width: 100%; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+                    <source src="./bandicam 2025-12-11 05-17-26-950.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <p style="margin-top: 1rem; color: #666; font-size: 0.95rem;">
+                    <em>Project Presentation: Portrait Matting with U-Net Demo</em>
+                </p>
+            </div>
+
             <h3>Key Findings</h3>
             <div class="highlight-box">
                 <h4>🔍 Important Discovery: Preprocessing Consistency</h4>
@@ -1004,6 +992,26 @@ self.conv = ConvBlock(out_c + skip_c, out_c)  # Account for concat
             <div class="highlight-box">
                 <h4>🔗 <a href="https://github.com/cmw2004/Portrait-Matting-with-U-Net" style="color: white;">github.com/cmw2004/Portrait-Matting-with-U-Net</a></h4>
                 <p>Complete source code, trained models, and documentation</p>
+            </div>
+
+            <h3>Project Reports</h3>
+            <div class="feature-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                <div class="feature-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <div class="feature-icon">📄</div>
+                    <h4>Proposal</h4>
+                    <p>Initial project proposal outlining objectives and methodology</p>
+                    <a href="./proposal.pdf" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1.5rem; background: white; color: #667eea; text-decoration: none; border-radius: 20px; font-weight: 600;">
+                        Download PDF
+                    </a>
+                </div>
+                <div class="feature-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                    <div class="feature-icon">📋</div>
+                    <h4>Mid-term Report</h4>
+                    <p>Progress update and preliminary results</p>
+                    <a href="./mid-term_report.pdf" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1.5rem; background: white; color: #f5576c; text-decoration: none; border-radius: 20px; font-weight: 600;">
+                        Download PDF
+                    </a>
+                </div>
             </div>
 
             <h3>Quick Start</h3>
